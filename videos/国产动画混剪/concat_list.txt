@@ -1,0 +1,6 @@
+file '/Users/koopos/AIGC/videos/国产动画混剪/clips/proc_01_nezha.mp4'
+file '/Users/koopos/AIGC/videos/国产动画混剪/clips/proc_02_jiangziya.mp4'
+file '/Users/koopos/AIGC/videos/国产动画混剪/clips/proc_03_dayuhaitang.mp4'
+file '/Users/koopos/AIGC/videos/国产动画混剪/clips/proc_04_baishe.mp4'
+file '/Users/koopos/AIGC/videos/国产动画混剪/clips/proc_05_qingshe.mp4'
+file '/Users/koopos/AIGC/videos/国产动画混剪/clips/proc_06_sunwukong.mp4'

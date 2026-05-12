@@ -1,0 +1,197 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>国产动画电影TOP5 · 高燃混剪</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      overflow: hidden;
+    }
+    .scene-content {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+    /* 装饰光圈 */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0;
+    }
+    .orb-1 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(255,100,50,0.4) 0%, transparent 70%);
+      top: -100px; left: -100px;
+    }
+    .orb-2 {
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(80,120,255,0.35) 0%, transparent 70%);
+      bottom: -80px; right: -80px;
+    }
+    .orb-3 {
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(255,200,50,0.3) 0%, transparent 70%);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    /* 主标题 */
+    .main-title {
+      font-size: 96px;
+      font-weight: 900;
+      color: #fff;
+      text-align: center;
+      letter-spacing: 8px;
+      text-shadow: 0 0 40px rgba(255,120,50,0.8), 0 0 80px rgba(255,80,30,0.4);
+      position: relative;
+      z-index: 2;
+      line-height: 1.2;
+    }
+    .sub-title {
+      font-size: 42px;
+      color: rgba(255,255,255,0.85);
+      text-align: center;
+      letter-spacing: 12px;
+      margin-top: 24px;
+      font-weight: 300;
+      text-shadow: 0 0 20px rgba(100,160,255,0.5);
+      position: relative;
+      z-index: 2;
+    }
+    /* 分隔线 */
+    .divider {
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #ff6030, #ffaa50, transparent);
+      margin: 20px auto;
+      position: relative;
+      z-index: 2;
+    }
+    /* 电影列表 */
+    .movie-list {
+      display: flex;
+      gap: 32px;
+      margin-top: 16px;
+      position: relative;
+      z-index: 2;
+    }
+    .movie-item {
+      font-size: 22px;
+      color: rgba(255,255,255,0.6);
+      letter-spacing: 4px;
+      font-weight: 300;
+    }
+    .movie-item span {
+      color: #ff9060;
+    }
+    /* 底部标签 */
+    .tag {
+      position: absolute;
+      bottom: 60px;
+      font-size: 18px;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 6px;
+      z-index: 2;
+    }
+    /* 粒子点 */
+    .particles {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      z-index: 1;
+      overflow: hidden;
+    }
+    .dot {
+      position: absolute;
+      width: 4px; height: 4px;
+      background: rgba(255,200,100,0.6);
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+  <div class="scene-content">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="particles" id="particles"></div>
+
+    <div class="main-title" id="title">国产动画电影</div>
+    <div class="sub-title" id="subtitle">TOP 5 · 高燃混剪</div>
+    <div class="divider" id="divider"></div>
+    <div class="movie-list" id="movies">
+      <div class="movie-item"><span>哪吒</span>之魔童降世</div>
+      <div class="movie-item"><span>姜子牙</span></div>
+      <div class="movie-item"><span>大鱼</span>海棠</div>
+      <div class="movie-item"><span>白蛇</span>缘起</div>
+      <div class="movie-item"><span>大圣</span>归来</div>
+    </div>
+    <div class="tag" id="tag">HEROIC COMPILATION</div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    window.__timelines = {};
+
+    // 粒子生成
+    const particles = document.getElementById('particles');
+    for (let i = 0; i < 40; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'dot';
+      dot.style.left = Math.random() * 100 + '%';
+      dot.style.top = Math.random() * 100 + '%';
+      dot.style.opacity = Math.random() * 0.5 + 0.2;
+      dot.style.width = (Math.random() * 3 + 2) + 'px';
+      dot.style.height = dot.style.width;
+      particles.appendChild(dot);
+    }
+
+    const tl = gsap.timeline({ paused: true });
+
+    // 光圈入场
+    tl.to('.orb-1', { opacity: 1, scale: 1.1, duration: 1.2, ease: 'power2.out' }, 0.1);
+    tl.to('.orb-2', { opacity: 1, scale: 1.15, duration: 1.0, ease: 'power2.out' }, 0.3);
+    tl.to('.orb-3', { opacity: 1, scale: 1.2, duration: 1.4, ease: 'power3.out' }, 0.2);
+
+    // 主标题
+    tl.fromTo('.main-title',
+      { y: 60, opacity: 0, scale: 0.9 },
+      { y: 0, opacity: 1, scale: 1, duration: 0.8, ease: 'expo.out' },
+      0.4);
+
+    // 副标题
+    tl.fromTo('.sub-title',
+      { y: 40, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out' },
+      0.7);
+
+    // 分隔线
+    tl.to('.divider', { width: '600px', duration: 0.6, ease: 'power2.inOut' }, 1.0);
+
+    // 电影列表 (stagger)
+    tl.fromTo('.movie-item',
+      { y: 20, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.4, ease: 'power2.out', stagger: 0.1 },
+      1.2);
+
+    // 标签
+    tl.fromTo('.tag', { opacity: 0 }, { opacity: 1, duration: 0.5 }, 1.5);
+
+    // 粒子动画
+    tl.fromTo('.dot',
+      { scale: 0, opacity: 0 },
+      { scale: 1, opacity: (i, el) => parseFloat(el.style.opacity), duration: 0.3, stagger: { each: 0.03, from: 'random' } },
+      0.5);
+
+    // 结束淡出
+    tl.to('.scene-content', { opacity: 0, duration: 0.8 }, 4.2);
+
+    window.__timelines['root'] = tl;
+  </script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+01_italian: Fashion magazine cover, 20-year-old Italian model on Milan runway, slender athletic build, long elegant dark hair, olive skin, bright smile confident, wearing a form-fitting black Versace gown, soft golden runway lighting, editorial high fashion photography, ultra realistic
+
+02_brazilian: Fashion magazine cover, 20-year-old Brazilian model on São Paulo runway, slim curvy figure, long wavy caramel hair, bronze sun-kissed skin, warm confident smile, wearing a vibrant sheer floral maxi dress, tropical amber stage lighting, Vogue editorial style, ultra realistic
+
+03_french: Fashion magazine cover, 20-year-old French model on Paris runway, slender graceful build, natural auburn bob hairstyle, porcelain fair skin, elegant confident smile, wearing a classic black Chanel cocktail dress with pearl accessories, cool white studio light, sophisticated haute couture aesthetic, ultra realistic
+
+04_japanese: Fashion magazine cover, 20-year-old Japanese model on Tokyo runway, slim delicate frame, long silky black hair with soft layers, flawless porcelain skin, gentle confident smile, wearing an ivory silk dress with delicate cherry blossom embroidery, soft diffused Japanese studio lighting, graceful minimalist aesthetic, ultra realistic
+
+05_american: Fashion magazine cover, 20-year-old American model on New York runway, athletic slim build, long balayage blonde hair, warm tan skin, bold confident smile, wearing a metallic silver avant-garde dress, dramatic dramatic stage lighting, NYC fashion week editorial, ultra realistic
+
+06_russian: Fashion magazine cover, 20-year-old Russian model on Moscow runway, tall slender figure, icy blue eyes, platinum blonde hair in sleek high ponytail, pale porcelain skin, regal confident smile, wearing a white crystalline gown with dramatic shoulder silhouette, cool blue atmospheric lighting, ultra realistic
+
+07_indian: Fashion magazine cover, 20-year-old Indian model on Mumbai runway, slim graceful build, long dark braided hair adorned with gold jasmine flowers, warm mahogany skin, radiant confident smile, wearing a neon green silk gown with dramatic thigh-high slit and gold embroidery, warm golden backlighting with festive Indian atmosphere, ultra realistic
+
+08_korean: Fashion magazine cover, 20-year-old Korean model on Seoul runway, slender elegant build, sleek straight black hair, flawless glass skin with natural glow, cute confident smile, wearing a rose gold pastel midi dress with delicate puffy sleeves, soft pink ambient lighting, Korean fashion editorial aesthetic, ultra realistic
+
+09_spanish: Fashion magazine cover, 20-year-old Spanish model on Madrid runway, slim fit build, raven black hair with loose waves, olive skin with a beauty mark, passionate confident smile, wearing a crimson off-shoulder flamenco-inspired gown with flowing ruffles, dramatic warm spotlights with Spanish tile patterns in background, ultra realistic
+
+10_australian: Fashion magazine cover, 20-year-old Australian model on Sydney runway, athletic slim build, tousled wavy blonde hair with natural sun highlights, tanned glowing skin, relaxed confident smile, wearing a white crochet maxi dress with coastal vibes, natural golden hour sunlight with beachside runway setting, ultra realistic
+
+11_german: Fashion magazine cover, 20-year-old German model on Berlin runway, tall slender angular build, platinum blonde pixie cut hair, fair porcelain skin, sharp confident smile, wearing a black leather structured bodysuit with geometric cutouts, moody grey-blue studio lighting with abstract Bauhaus architecture background, ultra realistic
+
+12_mexican: Fashion magazine cover, 20-year-old Mexican model on Mexico City runway, slim curvy figure, long flowing dark hair with natural waves, rich caramel skin, warm vibrant smile, wearing a white tiered gown with bold red floral embroidery and ruffles, warm sunset Mexican colonial plaza background, ultra realistic
+
+13_chinese: Fashion magazine cover, 20-year-old Chinese model on Shanghai runway, slender graceful build, long straight jet-black hair, flawless milky white skin, elegant confident smile, wearing an emerald green silk Qipao-inspired gown with intricate gold dragon embroidery, dramatic red and gold imperial palace lighting with Chinese architecture backdrop, ultra realistic
+
+14_southafrican: Fashion magazine cover, 20-year-old South African model on Johannesburg runway, slim athletic build, short natural textured afro hair, deep ebony skin with luminous glow, powerful confident smile, wearing a metallic bronze one-shoulder gown with flowing dramatic train, rich warm amber lighting with Afro-futuristic geometric patterns background, ultra realistic
+
+15_turkish: Fashion magazine cover, 20-year-old Turkish model on Istanbul runway, slender elegant build, long chestnut hair with loose natural curls, olive skin with hazel eyes, warm confident smile, wearing a white beaded gown with dramatic flowing train and Muslim-inspired modest elegance, warm golden Ottoman palace ambience lighting with Turkish calligraphy patterns backdrop, ultra realistic
+
+16_british: Fashion magazine cover, 20-year-old British model on London Fashion Week runway, tall slender build, iconic ginger loose waves hair, fair freckled skin, sharp confident smile, wearing a navy double-breasted power suit with wide leg trousers, cool grey London studio lighting with Westminster Bridge background, ultra realistic
+
+17_vietnamese: Fashion magazine cover, 20-year-old Vietnamese model on Hanoi runway, slender graceful build, long silky black hair in elegant high bun with white jasmine flower ornaments, warm golden-brown skin, gentle confident smile, wearing an ivory silk Ao Dai-inspired gown with delicate floral hand embroidery, soft natural Vietnamese temple lighting with pagoda architecture backdrop, ultra realistic
+
+18_emirati: Fashion magazine cover, 20-year-old Emirati model on Dubai luxury runway, slender elegant build, long jet-black hair in elaborate braided updo with gold accents, medium warm skin tone, graceful confident smile, wearing a black beaded haute couture abaya with dramatic flowing train and crystal embellishments, rich warm golden palace lighting with Islamic geometric patterns backdrop, ultra realistic
+
+19_colombian: Fashion magazine cover, 20-year-old Colombian model on Bogotá runway, slim curvy figure, long body wave caramel hair, bronzed sun-kissed skin, warm radiant smile, wearing a figure-hugging coral red bodycon dress with daring high slit and golden accessories, warm tropical lighting with lush coffee plantation background, ultra realistic
+
+20_dutch: Fashion magazine cover, 20-year-old Dutch model on Amsterdam fashion runway, tall statuesque slender build, long platinum blonde balayage hair, pale blue eyes, porcelain skin, elegant confident smile, wearing a white minimal structured corset top paired with wide-leg silk trousers, clean white Dutch canal house lighting with tulip arrangements backdrop, ultra realistic
