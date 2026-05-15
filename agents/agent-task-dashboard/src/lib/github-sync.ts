@@ -21,12 +21,14 @@ function assertSafeRepoPart(value: string, label: string) {
   }
 }
 
-async function run(command: string, args: string[], cwd?: string) {
-  const result = await execFileAsync(command, args, { cwd, maxBuffer: 1024 * 1024 * 10 });
+async function run(command: string, args: string[], cwd?: string, timeoutMs = 0) {
+  const opts = { cwd, maxBuffer: 1024 * 1024 * 10 };
+  if (timeoutMs > 0) opts["timeout"] = timeoutMs;
+  const result = await execFileAsync(command, args, opts);
   return `${result.stdout ?? ""}${result.stderr ?? ""}`.trim();
 }
 
-export async function ensureRepo(projectId: string) {
+export async function ensureRepo(projectId: string, timeoutMs = 15000) {
   const project = await prisma.project.findUniqueOrThrow({ where: { id: projectId } });
   assertSafeRepoPart(project.owner, "owner");
   assertSafeRepoPart(project.repo, "repo");
@@ -37,14 +39,14 @@ export async function ensureRepo(projectId: string) {
   await mkdir(DEFAULT_WORKROOT, { recursive: true });
 
   try {
-    await run("git", ["-C", localPath, "status"]);
+    await run("git", ["-C", localPath, "status"], undefined, timeoutMs);
   } catch {
-    await run("gh", ["repo", "clone", repoFullName, localPath]);
+    await run("gh", ["repo", "clone", repoFullName, localPath], undefined, timeoutMs);
   }
 
-  await run("git", ["fetch", "origin", "--prune"], localPath);
-  await run("git", ["checkout", project.defaultBranch], localPath);
-  await run("git", ["pull", "--ff-only", "origin", project.defaultBranch], localPath);
+  await run("git", ["fetch", "origin", "--prune"], localPath, timeoutMs);
+  await run("git", ["checkout", project.defaultBranch], localPath, timeoutMs);
+  await run("git", ["pull", "--ff-only", "origin", project.defaultBranch], localPath, timeoutMs);
 
   if (!project.localPath) {
     await prisma.project.update({ where: { id: project.id }, data: { localPath } });
@@ -102,8 +104,8 @@ export async function syncProjectToGitHub(projectId: string): Promise<SyncResult
   return { ok: true, message: "已同步到 GitHub", stdout };
 }
 
-export async function syncProjectFromGitHub(projectId: string): Promise<SyncResult> {
-  const { project, localPath } = await ensureRepo(projectId);
+export async function syncProjectFromGitHub(projectId: string, timeoutMs = 15000): Promise<SyncResult> {
+  const { project, localPath } = await ensureRepo(projectId, timeoutMs);
   const filePath = join(localPath, project.taskFilePath);
   const raw = await readFile(filePath, "utf8");
   const data = JSON.parse(raw) as { tasks?: Array<Record<string, unknown>> };

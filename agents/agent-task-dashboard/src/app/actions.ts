@@ -4,8 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { nanoid } from "nanoid";
 import { prisma } from "@/lib/prisma";
-import { linesToJsonArray } from "@/lib/json";
 import { pollProjectOnce, syncProjectFromGitHub, syncProjectToGitHub } from "@/lib/github-sync";
+import { linesToJsonArray } from "@/lib/json";
 
 function text(formData: FormData, key: string, fallback = "") {
   return String(formData.get(key) ?? fallback).trim();
@@ -35,22 +35,30 @@ export async function createProject(formData: FormData) {
 }
 
 export async function createTask(projectId: string, formData: FormData) {
-  const type = text(formData, "type", "agent-dev");
+  const type = text(formData, "type", "agent-dating-post");
   const title = text(formData, "title");
   if (!title) throw new Error("任务标题不能为空");
 
   const taskKey = text(formData, "taskKey") || `task-${nanoid(8)}`;
+  const repoName = text(formData, "repoName");
+  const description = text(formData, "description");
+
+  // Validate required fields
+  if (type === "agent-dev" && !repoName) {
+    throw new Error("代码开发任务需要填写仓库名");
+  }
+  if ((type === "agent-dev" || type === "agent-image") && !description) {
+    throw new Error("该类型任务需要填写详细需求");
+  }
+
+  // Build references - for agent-dev, repoName goes to references
+  const references: string[] = [];
+  if (repoName) {
+    references.push(repoName);
+  }
+
   const input = {
-    style: text(formData, "style") || undefined,
-    platform: text(formData, "platform") || undefined,
-    duration: text(formData, "duration") || undefined,
-    aspect_ratio: text(formData, "aspectRatio") || undefined,
-    references: text(formData, "references")
-      .split("\n")
-      .map((item) => item.trim())
-      .filter(Boolean),
-    require_screenshot: formData.get("requireScreenshot") === "on",
-    auto_pr: formData.get("autoPr") !== "off",
+    ...(type === "agent-dev" && { references }),
   };
 
   await prisma.task.create({
@@ -61,8 +69,8 @@ export async function createTask(projectId: string, formData: FormData) {
       status: "pending",
       priority: text(formData, "priority", "normal"),
       title,
-      description: text(formData, "description"),
-      acceptanceCriteria: linesToJsonArray(text(formData, "acceptanceCriteria")),
+      description,
+      acceptanceCriteria: "[]",
       inputJson: JSON.stringify(input, null, 2),
       outputJson: "{}",
       artifactsJson: "[]",
@@ -143,11 +151,28 @@ export async function syncToGitHub(projectId: string) {
 }
 
 export async function syncFromGitHub(projectId: string) {
-  await syncProjectFromGitHub(projectId);
+  const SYNC_TIMEOUT = 15_000;
+  await Promise.race([
+    syncProjectFromGitHub(projectId),
+    new Promise((_, reject) => setTimeout(() => reject(new Error("从 GitHub 同步超时（15s）")), SYNC_TIMEOUT)),
+  ]);
   revalidatePath(`/projects/${projectId}`);
 }
 
 export async function pollOnce(projectId: string) {
-  await pollProjectOnce(projectId);
+  const SYNC_TIMEOUT = 15_000;
+  // Agent 处理后自动从 GitHub 同步最新状态
+  await Promise.race([
+    (async () => {
+      await pollProjectOnce(projectId);
+      await syncProjectFromGitHub(projectId);
+    })(),
+    new Promise((_, reject) => setTimeout(() => reject(new Error("同步超时（15s）")), SYNC_TIMEOUT)),
+  ]);
+  revalidatePath(`/projects/${projectId}`);
+}
+
+// 定时刷新 - 只刷新页面缓存，不做网络请求
+export async function refreshProject(projectId: string) {
   revalidatePath(`/projects/${projectId}`);
 }

@@ -48,15 +48,18 @@ running -> completed
 代码开发任务。
 
 流程：
-1. 创建分支：agent/{task.id}-{slug(title)}
-2. 阅读 README、依赖文件、源码、测试
-3. 写计划到 docs/plans/{task.id}.md
-4. 小步实现和 commit
-5. 跑 lint/test/build
-6. 前端项目生成截图到 artifacts/screenshots/{task.id}/
-7. push 分支并创建 PR
-8. 更新 task.output.branch、task.output.pr_url、task.output.artifacts、task.output.summary
-9. status=completed
+1. 解析 task.input.references 获取关联仓库列表（如 ["Koopos/aaa", "Koopos/bbb"]）
+2. 仔细阅读 task.description（详细需求），理解要做什么
+3. 如果有 references，先 clone 或 pull 每个关联仓库到本地 WORKROOT/{owner}__{repo}/
+4. 创建分支：agent/{task.id}-{slug(title)}
+5. 阅读主仓库和所有 references 仓库的 README、依赖文件、源码、测试
+6. 写计划到 docs/plans/{task.id}.md
+7. 小步实现和 commit
+8. 跑 lint/test/build
+9. 前端项目生成截图到 artifacts/screenshots/{task.id}/
+10. push 分支并创建 PR
+11. 更新 task.output.branch、task.output.pr_url、task.output.artifacts、task.output.summary
+12. status=completed
 
 ### agent-image
 
