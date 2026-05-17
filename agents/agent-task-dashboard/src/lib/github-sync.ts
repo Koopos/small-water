@@ -4,6 +4,7 @@ import { execFile } from "child_process";
 import { promisify } from "util";
 import { prisma } from "@/lib/prisma";
 import { parseJson } from "@/lib/json";
+import { syncProjectTaskQueue } from "@/lib/task-service";
 
 const execFileAsync = promisify(execFile);
 const DEFAULT_WORKROOT = `${process.env.HOME ?? "/tmp"}/AIGC/agents/github-task-agent/repos`;
@@ -22,8 +23,8 @@ function assertSafeRepoPart(value: string, label: string) {
 }
 
 async function run(command: string, args: string[], cwd?: string, timeoutMs = 0) {
-  const opts = { cwd, maxBuffer: 1024 * 1024 * 10 };
-  if (timeoutMs > 0) opts["timeout"] = timeoutMs;
+  const opts: { cwd?: string; maxBuffer: number; timeout?: number } = { cwd, maxBuffer: 1024 * 1024 * 10 };
+  if (timeoutMs > 0) opts.timeout = timeoutMs;
   const result = await execFileAsync(command, args, opts);
   return `${result.stdout ?? ""}${result.stderr ?? ""}`.trim();
 }
@@ -149,6 +150,7 @@ export async function syncProjectFromGitHub(projectId: string, timeoutMs = 15000
     });
   }
 
+  await syncProjectTaskQueue(projectId);
   await prisma.project.update({ where: { id: projectId }, data: { lastSyncedAt: new Date() } });
   return { ok: true, message: `已从 GitHub 同步 ${data.tasks?.length ?? 0} 个任务` };
 }

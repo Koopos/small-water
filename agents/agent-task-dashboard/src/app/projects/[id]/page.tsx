@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createTask, pollOnce, syncFromGitHub, syncToGitHub } from "@/app/actions";
+import { createTask } from "@/app/actions";
 import { prisma } from "@/lib/prisma";
 import { STATUSES, statusClass, statusLabel, taskTypeLabel } from "@/lib/task-types";
 import CreateTaskForm from "./CreateTaskForm";
 import AutoRefresh from "@/components/AutoRefresh";
+
+export const dynamic = "force-dynamic";
 
 export default async function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -15,26 +17,21 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   if (!project) notFound();
 
   const createTaskForProject = createTask.bind(null, project.id);
-  const syncToGitHubForProject = syncToGitHub.bind(null, project.id);
-  const syncFromGitHubForProject = syncFromGitHub.bind(null, project.id);
-  const pollOnceForProject = pollOnce.bind(null, project.id);
 
   return (
     <main className="grid gap-6">
       <section className="rounded-[2rem] border border-stone-200 bg-white/85 p-6 shadow-sm">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-stone-500">{project.owner}/{project.repo}</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-stone-500">本地任务池</p>
             <h1 className="mt-2 text-4xl font-semibold tracking-tight text-stone-950">{project.name}</h1>
-            <p className="mt-3 text-stone-600">任务文件：{project.taskFilePath} · 默认分支：{project.defaultBranch}</p>
-            <p className="mt-1 text-sm text-stone-500">本地路径：{project.localPath ?? "首次同步时自动 clone"}</p>
+            <p className="mt-3 text-stone-600">这里显示当前任务池中的任务，页面会定时拉取后端最新状态。</p>
+            <p className="mt-1 text-sm text-stone-500">最近更新：{project.updatedAt.toLocaleString()}</p>
           </div>
-          <AutoRefresh projectId={id} intervalMs={10000} />
-          <form className="flex flex-wrap gap-2">
-            <button formAction={syncToGitHubForProject} className="rounded-full bg-stone-950 px-4 py-2 text-sm font-bold text-white">Sync to GitHub</button>
-            <button formAction={syncFromGitHubForProject} className="rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-bold text-stone-800">Sync from GitHub</button>
-            {/* <button formAction={pollOnceForProject} className="rounded-full bg-amber-200 px-4 py-2 text-sm font-bold text-stone-950">Poll once</button> */}
-          </form>
+          <AutoRefresh endpointPath={`/api/projects/${id}`} intervalMs={10000} />
+          <div className="flex flex-wrap gap-2">
+            <Link href="/projects/new" className="rounded-full bg-stone-950 px-4 py-2 text-sm font-bold text-white">新建任务</Link>
+          </div>
         </div>
       </section>
 
@@ -55,7 +52,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                   <div className="grid gap-2">
                     {tasks.map((task) => (
                       <Link key={task.id} href={`/tasks/${task.id}`} className="rounded-2xl border border-stone-200 bg-white p-3 text-sm shadow-sm hover:border-stone-400">
-                        <span className="text-xs font-semibold text-stone-500">{task.taskKey} · {taskTypeLabel(task.type)}</span>
+                        <span className="text-xs font-semibold text-stone-500">{task.taskKey} · {taskTypeLabel(task.type)} · {task.workerPool ?? "content"}</span>
                         <span className="mt-1 block font-semibold text-stone-950">{task.title}</span>
                       </Link>
                     ))}

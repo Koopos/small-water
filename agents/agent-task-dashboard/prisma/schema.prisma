@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 model Project {
@@ -32,6 +32,7 @@ model Task {
   projectId          String
   taskKey            String
   type               String
+  workerPool         String   @default("content")
   status             String   @default("pending")
   priority           String   @default("normal")
   title              String
@@ -40,16 +41,21 @@ model Task {
   inputJson          String   @default("{}")
   outputJson         String   @default("{}")
   error              String?
+  lastError          String?
   branch             String?
   prUrl              String?
   artifactsJson      String   @default("[]")
   githubCommitSha    String?
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
+  queuedAt           DateTime @default(now())
   startedAt          DateTime?
   completedAt        DateTime?
   lockedBy           String?
   lockedAt           DateTime?
+  leaseToken         String?
+  leaseExpiresAt     DateTime?
+  retryCount         Int      @default(0)
 
   project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
   artifacts Artifact[]
@@ -57,6 +63,8 @@ model Task {
 
   @@unique([projectId, taskKey])
   @@index([projectId, status])
+  @@index([projectId, workerPool, status])
+  @@index([status, leaseExpiresAt])
 }
 
 model Artifact {

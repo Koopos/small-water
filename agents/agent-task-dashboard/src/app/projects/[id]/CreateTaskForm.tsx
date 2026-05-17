@@ -19,7 +19,7 @@ export default function CreateTaskForm({ action }: CreateTaskFormProps) {
 
   const getHint = () => {
     if (type === "agent-dating-post") return "只需选择类型，填写标题和优先级即可";
-    if (type === "agent-dev") return "需要填写仓库名、详细需求，其他字段可选";
+    if (type === "agent-dev") return "需要填写关联仓库或参考信息、详细需求，其他字段可选";
     if (type === "agent-image") return "需要填写详细需求，其他字段可选";
     return selectedType?.hint ?? "";
   };
@@ -62,11 +62,11 @@ export default function CreateTaskForm({ action }: CreateTaskFormProps) {
 
       {showRepoName && (
         <label className="grid gap-2">
-          <span className="text-sm font-semibold text-stone-700">仓库名</span>
+          <span className="text-sm font-semibold text-stone-700">关联仓库 / 参考信息</span>
           <input
             name="repoName"
             required
-            placeholder="例如：Koopos/aaa"
+            placeholder="例如：本地仓库路径、repo 名、参考链接"
             className="rounded-2xl border border-stone-200 bg-white px-4 py-3"
           />
         </label>

@@ -1,25 +1,31 @@
 "use client";
 
 import { useEffect } from "react";
-import { syncFromGitHub } from "@/app/actions";
+import { useRouter } from "next/navigation";
 
 interface AutoRefreshProps {
-  projectId: string;
+  endpointPath: string;
   intervalMs?: number;
 }
 
-export default function AutoRefresh({ projectId, intervalMs = 30000 }: AutoRefreshProps) {
+export default function AutoRefresh({ endpointPath, intervalMs = 10000 }: AutoRefreshProps) {
+  const router = useRouter();
+
   useEffect(() => {
-    const interval = setInterval(async () => {
+    const refresh = async () => {
       try {
-        await syncFromGitHub(projectId);
+        await fetch(endpointPath, { cache: "no-store" });
+        router.refresh();
       } catch (e) {
-        console.error("[AutoSync] syncFromGitHub failed:", e);
+        console.error("[AutoRefresh] refresh failed:", e);
       }
-    }, intervalMs);
+    };
+
+    refresh();
+    const interval = setInterval(refresh, intervalMs);
 
     return () => clearInterval(interval);
-  }, [projectId, intervalMs]);
+  }, [endpointPath, intervalMs, router]);
 
   return null;
 }

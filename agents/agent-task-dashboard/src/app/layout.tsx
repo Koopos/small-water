@@ -25,8 +25,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               </span>
             </Link>
             <nav className="flex items-center gap-2 text-sm font-medium text-stone-600">
-              <Link className="rounded-full px-4 py-2 hover:bg-stone-100" href="/projects">Projects</Link>
-              <Link className="rounded-full bg-stone-950 px-4 py-2 text-white hover:bg-stone-800" href="/projects/new">New Project</Link>
+              <Link className="rounded-full px-4 py-2 hover:bg-stone-100" href="/projects">任务池</Link>
+              <Link className="rounded-full bg-stone-950 px-4 py-2 text-white hover:bg-stone-800" href="/projects/new">新建任务</Link>
             </nav>
           </header>
           {children}
