@@ -109,6 +109,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
           <div className="mt-3 grid gap-3 text-stone-700">
             {task.prUrl ? <a href={task.prUrl} target="_blank" className="font-semibold text-blue-700">PR：{task.prUrl}</a> : <p>PR：暂无</p>}
             {task.branch ? <p>Branch：{task.branch}</p> : null}
+            {task.githubCommitSha ? <p>Commit：{task.githubCommitSha}</p> : null}
             {task.lockedBy ? <p>锁定：{task.lockedBy}</p> : null}
             {task.lockedAt ? <p>锁定时间：{task.lockedAt.toLocaleString()}</p> : null}
             {task.leaseExpiresAt ? <p>租约到期：{task.leaseExpiresAt.toLocaleString()}</p> : null}

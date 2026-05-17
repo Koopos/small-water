@@ -1,153 +1,33 @@
 from __future__ import annotations
 
-import argparse
-import json
 import os
 import sys
-import time
-import urllib.error
-import urllib.request
-from dataclasses import dataclass
-from typing import Any, Callable
+from pathlib import Path
+
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    sys.modules.setdefault("worker.main", sys.modules[__name__])
+
+from worker.core.common import WorkerConfig, WorkerError, claim_task, complete_task, fail_task, fetch_task, http_json, parse_json, pretty_json, safe_text, task_artifacts, task_input, task_output
+from worker.core.content import build_article_output, build_content_output, build_content_task_output, build_dating_post_output, build_hot_content_output, build_image_prompt, build_video_script_output, make_content_pages
+from worker.core.code import (build_code_branch_name, build_code_output, build_hermes_code_prompt, create_pull_request, extract_github_pr_url, extract_session_id, finalize_code_repo, format_command_failure, github_owner_repo, github_repo_full_name, git_env, is_transient_git_clone_error, lookup_existing_pull_request, maybe_parse_stdout, normalize_success_stderr, prepare_code_repo, resolve_code_task_command, repo_has_directory_contents, run_git, sanitize_branch_component)
+from worker.core.fs import public_url_for, resolve_artifact_root, write_json, write_placeholder_png, write_text
+from worker.core.image import build_image_output
+from worker.core.process import run_external_command
+from worker.core.repo import clone_github_repo, github_clone_url, resolve_repo_path, worker_repo_root
+from worker.core.runner import EXECUTORS, main, parse_args, run_once
 
 
-@dataclass
-class WorkerConfig:
-    api_base_url: str
-    worker_pool: str
-    worker_id: str
-    poll_interval_seconds: int = 5
+__all__ = [
+    'WorkerConfig', 'WorkerError', 'http_json', 'claim_task', 'fetch_task', 'complete_task', 'fail_task',
+    'parse_json', 'pretty_json', 'task_input', 'task_output', 'task_artifacts', 'safe_text',
+    'worker_repo_root', 'github_clone_url', 'is_transient_git_clone_error', 'clone_github_repo', 'resolve_repo_path',
+    'resolve_artifact_root', 'public_url_for', 'write_text', 'write_json', 'write_placeholder_png',
+    'make_content_pages', 'build_dating_post_output', 'build_article_output', 'build_hot_content_output', 'build_video_script_output', 'build_content_output', 'build_image_prompt', 'build_content_task_output',
+    'run_external_command', 'maybe_parse_stdout', 'normalize_success_stderr', 'extract_session_id', 'format_command_failure', 'build_hermes_code_prompt', 'resolve_code_task_command', 'git_env', 'run_git', 'sanitize_branch_component', 'build_code_branch_name',
+    'github_repo_full_name', 'github_owner_repo', 'extract_github_pr_url', 'repo_has_directory_contents', 'prepare_code_repo', 'lookup_existing_pull_request', 'create_pull_request', 'finalize_code_repo', 'build_code_output',
+    'build_image_output', 'EXECUTORS', 'run_once', 'parse_args', 'main',
+]
 
-
-class WorkerError(RuntimeError):
-    pass
-
-
-def http_json(method: str, url: str, payload: dict[str, Any] | None = None, timeout: int = 60) -> dict[str, Any]:
-    data = None if payload is None else json.dumps(payload).encode("utf-8")
-    request = urllib.request.Request(
-        url,
-        data=data,
-        headers={"Content-Type": "application/json"},
-        method=method,
-    )
-    try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
-            body = response.read().decode("utf-8")
-            return json.loads(body) if body else {}
-    except urllib.error.HTTPError as exc:
-        body = exc.read().decode("utf-8", errors="replace")
-        raise WorkerError(f"HTTP {exc.code}: {body}") from exc
-
-
-def claim_task(config: WorkerConfig) -> dict[str, Any] | None:
-    response = http_json(
-        "POST",
-        f"{config.api_base_url.rstrip('/')}/api/worker-pools/{config.worker_pool}/claim",
-        {"workerId": config.worker_id},
-    )
-    task = response.get("task")
-    if not task:
-        return None
-    return task
-
-
-def complete_task(config: WorkerConfig, task_id: str, payload: dict[str, Any]) -> None:
-    http_json(
-        "POST",
-        f"{config.api_base_url.rstrip('/')}/api/tasks/{task_id}/complete",
-        {"workerId": config.worker_id, "payload": payload},
-    )
-
-
-def fail_task(config: WorkerConfig, task_id: str, error: str, payload: dict[str, Any] | None = None) -> None:
-    http_json(
-        "POST",
-        f"{config.api_base_url.rstrip('/')}/api/tasks/{task_id}/fail",
-        {"workerId": config.worker_id, "error": error, "payload": payload or {}},
-    )
-
-
-def execute_code_task(task: dict[str, Any]) -> dict[str, Any]:
-    return {
-        "summary": f"Placeholder code worker completed {task.get('taskKey')}",
-        "result": "not_implemented",
-        "taskType": task.get("type"),
-    }
-
-
-def execute_image_task(task: dict[str, Any]) -> dict[str, Any]:
-    return {
-        "summary": f"Placeholder image worker completed {task.get('taskKey')}",
-        "result": "not_implemented",
-        "taskType": task.get("type"),
-    }
-
-
-def execute_content_task(task: dict[str, Any]) -> dict[str, Any]:
-    return {
-        "summary": f"Placeholder content worker completed {task.get('taskKey')}",
-        "result": "not_implemented",
-        "taskType": task.get("type"),
-    }
-
-
-EXECUTORS: dict[str, Callable[[dict[str, Any]], dict[str, Any]]] = {
-    "agent-dev": execute_code_task,
-    "agent-image": execute_image_task,
-    "agent-video-script": execute_content_task,
-    "agent-article": execute_content_task,
-    "agent-hot-content": execute_content_task,
-    "agent-dating-post": execute_content_task,
-    "agent-task": execute_content_task,
-}
-
-
-def run_once(config: WorkerConfig) -> bool:
-    task = claim_task(config)
-    if not task:
-        return False
-
-    task_id = str(task["id"])
-    task_type = str(task.get("type", "agent-task"))
-    executor = EXECUTORS.get(task_type)
-    if executor is None:
-        fail_task(config, task_id, f"Unsupported task type: {task_type}")
-        return True
-
-    try:
-        payload = executor(task)
-        complete_task(config, task_id, payload)
-        return True
-    except Exception as exc:  # noqa: BLE001
-        fail_task(config, task_id, str(exc), {"taskType": task_type})
-        return True
-
-
-def parse_args(argv: list[str]) -> WorkerConfig:
-    parser = argparse.ArgumentParser(description="Queue worker for agent-task-dashboard")
-    parser.add_argument("--api-base-url", default=os.environ.get("API_BASE_URL", "http://127.0.0.1:3000"))
-    parser.add_argument("--worker-pool", default=os.environ.get("WORKER_POOL", "content"), choices=["code", "image", "content"])
-    parser.add_argument("--worker-id", default=os.environ.get("WORKER_ID", f"worker-{os.getpid()}"))
-    parser.add_argument("--poll-interval", type=int, default=int(os.environ.get("POLL_INTERVAL_SECONDS", "5")))
-    args = parser.parse_args(argv)
-    return WorkerConfig(
-        api_base_url=args.api_base_url,
-        worker_pool=args.worker_pool,
-        worker_id=args.worker_id,
-        poll_interval_seconds=args.poll_interval,
-    )
-
-
-def main(argv: list[str] | None = None) -> int:
-    config = parse_args(argv or sys.argv[1:])
-    print(f"Worker starting: pool={config.worker_pool} id={config.worker_id} api={config.api_base_url}")
-
-    while True:
-        did_work = run_once(config)
-        if not did_work:
-            time.sleep(config.poll_interval_seconds)
-
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     raise SystemExit(main())

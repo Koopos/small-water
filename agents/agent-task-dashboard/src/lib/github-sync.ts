@@ -76,6 +76,7 @@ export async function syncProjectToGitHub(projectId: string): Promise<SyncResult
         ...parseJson<Record<string, unknown>>(task.outputJson, {}),
         branch: task.branch,
         pr_url: task.prUrl,
+        github_commit_sha: task.githubCommitSha,
         artifacts: parseJson<unknown[]>(task.artifactsJson, []),
       },
       error: task.error,
@@ -115,6 +116,7 @@ export async function syncProjectFromGitHub(projectId: string, timeoutMs = 15000
     const taskKey = String(item.id ?? "");
     if (!taskKey) continue;
     const output = (item.output ?? {}) as Record<string, unknown>;
+    const githubCommitSha = output.github_commit_sha ? String(output.github_commit_sha) : output.githubCommitSha ? String(output.githubCommitSha) : null;
     await prisma.task.upsert({
       where: { projectId_taskKey: { projectId, taskKey } },
       create: {
@@ -131,6 +133,7 @@ export async function syncProjectFromGitHub(projectId: string, timeoutMs = 15000
         error: item.error ? String(item.error) : null,
         branch: output.branch ? String(output.branch) : null,
         prUrl: output.pr_url ? String(output.pr_url) : null,
+        githubCommitSha,
         artifactsJson: JSON.stringify(output.artifacts ?? [], null, 2),
       },
       update: {
@@ -145,6 +148,7 @@ export async function syncProjectFromGitHub(projectId: string, timeoutMs = 15000
         error: item.error ? String(item.error) : null,
         branch: output.branch ? String(output.branch) : null,
         prUrl: output.pr_url ? String(output.pr_url) : null,
+        githubCommitSha,
         artifactsJson: JSON.stringify(output.artifacts ?? [], null, 2),
       },
     });

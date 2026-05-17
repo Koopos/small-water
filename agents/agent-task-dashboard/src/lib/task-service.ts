@@ -213,27 +213,63 @@ export async function extendTaskLease(taskId: string, workerId: string, leaseTok
   return leaseExpiresAt;
 }
 
+function extractRunLogContent(payload: Record<string, unknown>, fallbackError: string | null = null) {
+  const stdout = typeof payload.stdout === "string" ? payload.stdout : typeof payload.output === "string" ? payload.output : null;
+  const stderr = typeof payload.stderr === "string" ? payload.stderr : fallbackError;
+  return { stdout, stderr };
+}
+
+function extractGitMetadata(payload: Record<string, unknown>, task: { branch: string | null; prUrl: string | null; githubCommitSha: string | null }) {
+  return {
+    branch: typeof payload.branch === "string" ? payload.branch : task.branch,
+    prUrl: typeof payload.pr_url === "string" ? payload.pr_url : task.prUrl,
+    githubCommitSha:
+      typeof payload.github_commit_sha === "string"
+        ? payload.github_commit_sha
+        : typeof payload.githubCommitSha === "string"
+          ? payload.githubCommitSha
+          : task.githubCommitSha,
+  };
+}
+
 export async function completeTask(taskId: string, workerId: string, payload: Record<string, unknown> = {}) {
   const task = await prisma.task.findUnique({ where: { id: taskId } });
   if (!task) throw new Error("Task not found");
   if (task.lockedBy && task.lockedBy !== workerId) throw new Error("Task is locked by another worker");
 
-  await prisma.task.update({
-    where: { id: taskId },
-    data: {
-      status: "completed",
-      outputJson: JSON.stringify(payload, null, 2),
-      error: null,
-      lastError: null,
-      completedAt: new Date(),
-      lockedBy: null,
-      lockedAt: null,
-      leaseToken: null,
-      leaseExpiresAt: null,
-      branch: typeof payload.branch === "string" ? payload.branch : task.branch,
-      prUrl: typeof payload.pr_url === "string" ? payload.pr_url : task.prUrl,
-    },
-  });
+  const runId = nanoid();
+  const { stdout, stderr } = extractRunLogContent(payload);
+  const gitMetadata = extractGitMetadata(payload, task);
+
+  await prisma.$transaction([
+    prisma.task.update({
+      where: { id: taskId },
+      data: {
+        status: "completed",
+        outputJson: JSON.stringify(payload, null, 2),
+        error: null,
+        lastError: null,
+        completedAt: new Date(),
+        lockedBy: null,
+        lockedAt: null,
+        leaseToken: null,
+        leaseExpiresAt: null,
+        branch: gitMetadata.branch,
+        prUrl: gitMetadata.prUrl,
+        githubCommitSha: gitMetadata.githubCommitSha,
+      },
+    }),
+    prisma.runLog.create({
+      data: {
+        projectId: task.projectId,
+        taskId: task.id,
+        runId,
+        status: "completed",
+        stdout: stdout ?? JSON.stringify(payload, null, 2),
+        stderr,
+      },
+    }),
+  ]);
 
   const redis = await getRedis();
   await redis.del(leaseKey(taskId));
@@ -244,20 +280,35 @@ export async function failTask(taskId: string, workerId: string, error: string, 
   if (!task) throw new Error("Task not found");
   if (task.lockedBy && task.lockedBy !== workerId) throw new Error("Task is locked by another worker");
 
-  await prisma.task.update({
-    where: { id: taskId },
-    data: {
-      status: "failed",
-      error,
-      lastError: error,
-      outputJson: JSON.stringify(payload, null, 2),
-      completedAt: new Date(),
-      lockedBy: null,
-      lockedAt: null,
-      leaseToken: null,
-      leaseExpiresAt: null,
-    },
-  });
+  const runId = nanoid();
+  const { stdout, stderr } = extractRunLogContent(payload, error);
+
+  await prisma.$transaction([
+    prisma.task.update({
+      where: { id: taskId },
+      data: {
+        status: "failed",
+        error,
+        lastError: error,
+        outputJson: JSON.stringify(payload, null, 2),
+        completedAt: new Date(),
+        lockedBy: null,
+        lockedAt: null,
+        leaseToken: null,
+        leaseExpiresAt: null,
+      },
+    }),
+    prisma.runLog.create({
+      data: {
+        projectId: task.projectId,
+        taskId: task.id,
+        runId,
+        status: "failed",
+        stdout,
+        stderr: stderr ?? error,
+      },
+    }),
+  ]);
 
   const redis = await getRedis();
   await redis.del(leaseKey(taskId));
